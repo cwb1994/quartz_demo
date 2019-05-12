@@ -23,6 +23,12 @@ public class QuartzTask {
         this.triggerName = triggerName;
     }
 
+    public QuartzTask(String jobName, String jobGroup ) {
+        super();
+        this.jobName = jobName;
+        this.jobGroup = jobGroup;
+    }
+
     public String getJobName() {
         return jobName;
     }

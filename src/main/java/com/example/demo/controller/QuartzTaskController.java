@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/task")
 public class QuartzTaskController {
@@ -19,7 +21,7 @@ public class QuartzTaskController {
     private Scheduler scheduler;
 
     @Autowired
-    private QuartzTaskService jobService;
+    private QuartzTaskService taskService;
 
     //添加task
     @RequestMapping(value = "/add/{jobName}")
@@ -50,4 +52,63 @@ public class QuartzTaskController {
         return new Result("200", "", null);
     }
 
+    //立即运行task
+    @RequestMapping(value = "/run/{jobName}")
+    public Result run(@PathVariable(name = "jobName") String jobName) throws Exception {
+        QuartzTask task = taskService.getTask(jobName);
+        if (task == null) {
+            return new Result("401", jobName + "不存在", null);
+        }
+        JobKey jobKey = new JobKey(task.getJobName(), task.getJobGroup());
+        scheduler.triggerJob(jobKey);
+        return new Result("200", "", null);
+    }
+
+    //停止task
+    @RequestMapping(value = "/pause/{jobName}")
+    public Result pause(@PathVariable(name = "jobName") String jobName) throws Exception {
+        QuartzTask task = taskService.getTask(jobName);
+        if (task == null) {
+            return new Result("401", jobName + "不存在", null);
+        }
+        JobKey jobKey = new JobKey(task.getJobName(), task.getJobGroup());
+        scheduler.pauseJob(jobKey);
+        return new Result("200", "", null);
+    }
+
+    //恢复task
+    @RequestMapping(value = "/resume/{jobName}")
+    public Result resume(@PathVariable(name = "jobName") String jobName) throws Exception{
+        QuartzTask task = taskService.getTask(jobName);
+        if (task == null) {
+            return new Result("401", jobName + "不存在", null);
+        }
+        JobKey jobKey = new JobKey(task.getJobName(), task.getJobGroup());
+        scheduler.resumeJob(jobKey);
+        return new Result("200", "", null);
+    }
+
+    //删除task
+    @RequestMapping(value = "/delete/{jobName}")
+    public Result delete(@PathVariable(name = "jobName") String jobName) throws Exception{
+        QuartzTask task = taskService.getTask(jobName);
+        if (task == null) {
+            return new Result("401", jobName + "不存在", null);
+        }
+        TriggerKey triggerKey = TriggerKey.triggerKey(task.getJobName(), task.getJobGroup());
+        // 停止触发器
+        scheduler.pauseTrigger(triggerKey);
+        // 移除触发器
+        scheduler.unscheduleJob(triggerKey);
+        // 删除task
+        scheduler.deleteJob(JobKey.jobKey(task.getJobName(), task.getJobGroup()));
+        return new Result("200", "", null);
+    }
+
+    //获取task列表
+    @RequestMapping(value = "/getlist")
+    public Result getList() throws Exception {
+        List<QuartzTask> taskList=taskService.getTaskList();
+        return new Result("200","",taskList);
+    }
 }

@@ -7,5 +7,8 @@ import java.util.List;
 
 @Repository
 public interface QuartzTaskMapper {
-   public List<QuartzTask> getTaskList();
+
+    public List<QuartzTask> getTaskList();
+
+    public QuartzTask getTask(String jobName);
 }

@@ -13,9 +13,12 @@ public class QuartzTaskService {
     @Autowired
     private QuartzTaskMapper quartzTaskMapper;
 
-    public List<QuartzTask> getTaskList()
-    {
+    public List<QuartzTask> getTaskList() {
         return quartzTaskMapper.getTaskList();
+    }
+
+    public QuartzTask getTask(String jobName) {
+        return quartzTaskMapper.getTask(jobName);
     }
 
 }
